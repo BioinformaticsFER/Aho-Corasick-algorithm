@@ -58,11 +58,14 @@ Programs are written for Bio-Linux platform.
 - C#:
    + unpack AhoCorasick_C#.zip
    + open Terminal
-   + go to directory 'solution'
+   + get compiler for C# using following line:
+      sudo apt-get install mono-complete
+   + go to directory 'AhoCorasick_C#'
    + compile program using following line:
       xbuild /p:OutputPath='desired_output_directory' AhoCorasick.sln
    + run program using following line:
       mono AhoCorasick.exe file1 file2
+   
 
 
 - JAVA:
