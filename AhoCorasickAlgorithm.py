@@ -97,8 +97,12 @@ def enter(ki, g, output, newstate):
 def failure(g, output, alphabet):
     queue = [];
     f = {};
+    # Failure starts with states s that have defined transition 0->s,
+    # those states have f(s)=0. All failure functions for other
+    # states are genereted based on states that have smaller depth.
+    # (Depth(s) - number of transitions from 0 to s)
     for a in alphabet:
-        if g[0, a] != 0:
+        if g[0, a] != 0:            
             queue.append(g[0, a]);
             f[g[0, a]] = 0;
     while queue != []:
@@ -128,8 +132,6 @@ try:
 except IndexError:
     print("Keywords and/or text file not provided!");
     exit(-1);
-#keywordsfile = 'keywords';
-#textfile = 'text';
 
 start = time.time();    
 file = open(keywordsfile, 'r');    
@@ -154,14 +156,14 @@ file = open('output', 'w');
 start = time.time();
 state = 0;
 for i in range(len(text)):
-    if (state, text[i]) in g:
+    if (state, text[i]) in g:       # transitions already defined
         state = g[state, text[i]];
-    elif state == 0:
+    elif state == 0:                # undefined transitions from 0 return to state 0
         g[0, text[i]] = 0;
         alphabet.append(text[i]);
         state = 0;
     else:
-        state = f[state];
+        state = f[state];           # other undefined transitions find with failure function    
         if text[i] not in alphabet:
             g[0, text[i]] = 0;
         while ((state, text[i]) not in g):
