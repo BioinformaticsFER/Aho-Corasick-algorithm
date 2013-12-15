@@ -124,59 +124,57 @@ def failure(g, output, alphabet):
 
     return output, f;
 
+def main(keywordsfile, textfile):
+    m0 = memory();   
+    file = open(keywordsfile, 'r');    
+    keywords = file.read()[0:-1].split(',');
+    file.close();
 
-m0 = memory();
-try:
-    keywordsfile = sys.argv[1];
-    textfile = sys.argv[2];
-except IndexError:
-    print("Keywords and/or text file not provided!");
-    exit(-1);
+    # Constructing a DFA for pattern matching from the set of keywords.
+    start = time.clock();
+    g, output, alphabet = goto(keywords);
+    output, f = failure(g, output, alphabet);
+    print('Construction of DFA done in {} ms.'.format((time.clock() - start)*1000));
 
-start = time.time();    
-file = open(keywordsfile, 'r');    
-keywords = file.read()[0:-1].split(',');
-file.close();
-
-file = open(textfile, 'r');
-text = file.read();
-text = text[0 : (len(text) - 1)];
-text = text.replace('\n', '');
-file.close();
-print('Loading files done in {} ms.'.format((time.time() - start)*1000)); 
-
-# Constructing a DFA for pattern matching from the set of keywords.
-start = time.time();
-g, output, alphabet = goto(keywords);
-output, f = failure(g, output, alphabet);
-print('Construction of DFA done in {} ms.'.format((time.time() - start)*1000));
-
-# Finding all occurrences of keywords in text using DFA.
-file = open('output', 'w');
-start = time.time();
-state = 0;
-for i in range(len(text)):
-    counter = 0;
-    if (state, text[i]) in g:
-        state = g[state, text[i]];
-        counter = 1;
-        if state in output:
-            for oi in output[state]:
-                file.write('index: {0:7d}  =>  keyword: {1:10}\n'.format((int(i - len(oi) + 1)), oi));
-    if counter == 0:
-        if text[i] not in alphabet:
-            alphabet.append(text[i]);
-            g[0, text[i]] = 0;
-        if state != 0:
-            foundState = 0;
-            while(foundState == 0):
-                state = f[state];
+    # Finding all occurrences of keywords in text using DFA.
+    file = open('output', 'w');
+    start = time.clock();
+    state = 0;
+    position = 0;
+    with open(textfile, 'r') as t:
+        for text in t:
+            for i in range(len(text)-1):
+                counter = 0;
                 if (state, text[i]) in g:
-                    foundState = 1;
                     state = g[state, text[i]];
-                    break;
+                    counter = 1;
+                    if state in output:
+                        for oi in output[state]:
+                            file.write('index: {0:7d}  =>  keyword: {1:10}\n'.format((int(position + i - len(oi) + 1)), oi));
+                if counter == 0:
+                    if text[i] not in alphabet:
+                        alphabet.append(text[i]);
+                        g[0, text[i]] = 0;
+                    if state != 0:
+                        foundState = 0;
+                        while(foundState == 0):
+                            state = f[state];
+                            if (state, text[i]) in g:
+                                foundState = 1;
+                                state = g[state, text[i]];
+                                break;
+            position += len(text) - 1;
 
-print('Finding all keywords in text done in {} ms.'.format((time.time() - start)*1000));
-file.close();
-m1 = memory(m0);
-print('Total memory used: {} KiB'.format(m1/1024));
+    print('Finding all keywords in text done in {} ms.'.format((time.clock() - start)*1000));
+    file.close();
+    m1 = memory(m0);
+    print('Total memory used: {} KiB'.format(m1/1024));
+
+if __name__ == "__main__":
+    try:
+        keywordsfile = sys.argv[1];
+        textfile = sys.argv[2];
+    except IndexError:
+        print("Keywords and/or text file not provided!");
+        exit(-1);
+    main(keywordsfile, textfile);
