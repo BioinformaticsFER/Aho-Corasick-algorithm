@@ -1,9 +1,19 @@
+# author: Janja Paliska
+# This is code for Aho Corasick Algoritam - an efficient algorithm
+# for finding substrings in text using deterministic finite automaton
+
+
+
+
 import sys
 import time
 import os
 
 #------------------memory usage------------------------#
-#taken from: http://code.activestate.com/recipes/286222/
+# Lines 17-56 are taken from:
+# http://code.activestate.com/recipes/286222/
+# and are used to measure total memory spent while running
+# this program
 _proc_status = '/proc/%d/status' % os.getpid()
 _scale = {'kB': 1024.0, 'mB': 1024.0*1024.0,
           'KB': 1024.0, 'MB': 1024.0*1024.0}
@@ -124,6 +134,12 @@ def failure(g, output, alphabet):
 
     return output, f;
 
+
+# Function main reads keywords file, construct DFA and then, reading text
+# line by line, locates keywords in text. It produces both Terminal and 
+# file outputs: Terminal - performance (time spent constructing DFA, time
+# spent locating all keywords, memory usage), file - keywords that were
+# located in text and their indexes
 def main(keywordsfile, textfile):
     m0 = memory();   
     file = open(keywordsfile, 'r');    
@@ -131,41 +147,45 @@ def main(keywordsfile, textfile):
     file.close();
 
     # Constructing a DFA for pattern matching from the set of keywords.
-    start = time.clock();
-    g, output, alphabet = goto(keywords);
+    start = time.time();
+    g, output, alphabet = goto(keywords); 
     output, f = failure(g, output, alphabet);
-    print('Construction of DFA done in {} ms.'.format((time.clock() - start)*1000));
+    print('Construction of DFA done in {} ms.'.format((time.time() - start)*1000));
 
     # Finding all occurrences of keywords in text using DFA.
     file = open('output', 'w');
-    start = time.clock();
+    start = time.time();
     state = 0;
     position = 0;
-    with open(textfile, 'r') as t:
-        for text in t:
-            for i in range(len(text)-1):
-                counter = 0;
-                if (state, text[i]) in g:
-                    state = g[state, text[i]];
-                    counter = 1;
-                    if state in output:
-                        for oi in output[state]:
-                            file.write('index: {0:7d}  =>  keyword: {1:10}\n'.format((int(position + i - len(oi) + 1)), oi));
-                if counter == 0:
-                    if text[i] not in alphabet:
-                        alphabet.append(text[i]);
-                        g[0, text[i]] = 0;
-                    if state != 0:
-                        foundState = 0;
-                        while(foundState == 0):
-                            state = f[state];
-                            if (state, text[i]) in g:
-                                foundState = 1;
-                                state = g[state, text[i]];
-                                break;
-            position += len(text) - 1;
+    try:
+        with open(textfile, 'r') as t:
+            for text in t:
+                for i in range(len(text)-1):
+                    counter = 0;
+                    if (state, text[i]) in g:
+                        state = g[state, text[i]];
+                        counter = 1;
+                        if state in output:
+                            for oi in output[state]:
+                                file.write('index: {0:7d}  =>  keyword: {1:10}\n'.format((int(position + i - len(oi) + 1)), oi));
+                    if counter == 0:
+                        if text[i] not in alphabet:
+                            alphabet.append(text[i]);
+                            g[0, text[i]] = 0;
+                        if state != 0:      # All transitions that are not defined
+                            foundState = 0; # lead back to start state (0).
+                            while(foundState == 0):
+                                state = f[state];
+                                if (state, text[i]) in g:
+                                    foundState = 1;
+                                    state = g[state, text[i]];
+                                    break;
+                position += len(text) - 1;
+    except IOError:
+        print('Error while opening files');
+        exit(-1);
 
-    print('Finding all keywords in text done in {} ms.'.format((time.clock() - start)*1000));
+    print('Finding all keywords in text done in {} ms.'.format((time.time() - start)*1000));
     file.close();
     m1 = memory(m0);
     print('Total memory used: {} KiB'.format(m1/1024));

@@ -85,8 +85,7 @@ Programs are written for Bio-Linux platform.
 
 ***OUTPUTS***
 - Terminal:
-   + time spent for loading files
-   + time spent for construction of DFA
+   + time spent for construction of DFA (loading text file included)
    + time spent for finding all keywords
    + total memory used
 - file 'output':
