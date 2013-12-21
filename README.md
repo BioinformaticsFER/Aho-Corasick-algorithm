@@ -96,10 +96,12 @@ Programs are written for Bio-Linux platform.
 
 ***GIVEN EXAMPLE FILES***
 
-In repository there are two files given as an example of file1 
-(keywords) and file2 (text). Running programs with those files should 
-return the output same as the one provided in the repository.
+There are two files in a repository given as an example of file1 
+(keywords) and file2* (text). Running programs with those files
+returns the output provided in the repository.
 
+*Text is taken from Ensembl data base (http://www.ensembl.org/index.html), species: fruitfly, file:  Drosophila_melanogaster.BDGP5.74.dna.chromosome.dmel_mitochondrion_g
+enome.fa
 
 
 ***CONTACTS***
