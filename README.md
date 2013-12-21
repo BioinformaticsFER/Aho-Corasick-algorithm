@@ -98,11 +98,7 @@ Programs are written for Bio-Linux platform.
 
 In repository there are two files given as an example of file1 
 (keywords) and file2 (text). Running programs with those files should 
-return the following output:
-
-index:       1  =>  keyword: she       
-index:       2  =>  keyword: he        
-index:       2  =>  keyword: hers     
+return the output same as the one provided in the repository.
 
 
 
