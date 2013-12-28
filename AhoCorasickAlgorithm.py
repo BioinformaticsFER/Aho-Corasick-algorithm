@@ -3,8 +3,6 @@
 # for finding substrings in text using deterministic finite automaton
 
 
-
-
 import sys
 import time
 import os
@@ -70,10 +68,11 @@ def goto(keywords):
     output = {}
     for ki in keywords:
         for a in ki:
-            if a not in alphabet:
+            if a not in alphabet: # Alphabet list contains all symbols 
                 alphabet.append(a);
         g, output, newstate = enter(ki, g, output, newstate);
-    for a in alphabet:
+    # Make transition from 0 back to 0 for all undefined transitions g(0,a)
+    for a in alphabet: 
         if (0, a) not in g:
             g[0, a] = 0;
     return g, output, alphabet
@@ -141,10 +140,16 @@ def failure(g, output, alphabet):
 # spent locating all keywords, memory usage), file - keywords that were
 # located in text and their indexes
 def main(keywordsfile, textfile):
-    m0 = memory();   
+    m0 = memory(); # Start measuring memory 
+    # Check if either file is empty and if so, exit
+    if (os.stat(keywordsfile)[6] == 0) or (os.stat(textfile)[6] == 0):
+        print("Files cannot be empty!");
+        exit(-1);
     file = open(keywordsfile, 'r');    
-    keywords = file.read()[0:-1].split(',');
+    keywords = file.readline()[0:-1].split(',');
     file.close();
+    keywords = list(filter(bool, keywords)); # Remove empty strings
+    keywords = list(set(keywords)); # Remove duplicates from list
 
     # Constructing a DFA for pattern matching from the set of keywords.
     start = time.time();
@@ -172,7 +177,7 @@ def main(keywordsfile, textfile):
                         if text[i] not in alphabet:
                             alphabet.append(text[i]);
                             g[0, text[i]] = 0;
-                        if state != 0:      # All transitions that are not defined
+                        if state != 0:      # All transitions g(0, a) that are yet not defined
                             foundState = 0; # lead back to start state (0).
                             while(foundState == 0):
                                 state = f[state];
@@ -187,7 +192,7 @@ def main(keywordsfile, textfile):
 
     print('Finding all keywords in text done in {} ms.'.format((time.time() - start)*1000));
     file.close();
-    m1 = memory(m0);
+    m1 = memory(m0); # Stop measuring memory
     print('Total memory used: {} KiB'.format(m1/1024));
 
 if __name__ == "__main__":
