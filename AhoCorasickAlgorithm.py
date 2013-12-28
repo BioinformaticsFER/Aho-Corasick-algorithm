@@ -146,17 +146,21 @@ def main(keywordsfile, textfile):
         print("Files cannot be empty!");
         exit(-1);
     file = open(keywordsfile, 'r');    
-    keywords = file.readline()[0:-1].split(',');
+    keywords_tmp = file.readline()[0:-1].split(',');
     file.close();
-    keywords = list(filter(bool, keywords)); # Remove empty strings
-    keywords = list(set(keywords)); # Remove duplicates from list
+    keywords_tmp = list(filter(bool, keywords_tmp)); # Remove empty strings
+    # Remove duplicates from list
+    keywords = [];
+    for k in keywords_tmp:
+        if k not in keywords:
+            keywords.append(k);
 
     # Constructing a DFA for pattern matching from the set of keywords.
     start = time.time();
     g, output, alphabet = goto(keywords); 
     output, f = failure(g, output, alphabet);
     print('Construction of DFA done in {} ms.'.format((time.time() - start)*1000));
-
+    
     # Finding all occurrences of keywords in text using DFA.
     file = open('output', 'w');
     start = time.time();
@@ -170,9 +174,7 @@ def main(keywordsfile, textfile):
                     if (state, text[i]) in g:
                         state = g[state, text[i]];
                         counter = 1;
-                        if state in output:
-                            for oi in output[state]:
-                                file.write('index: {0:7d}  =>  keyword: {1:10}\n'.format((int(position + i - len(oi) + 1)), oi));
+                        
                     if counter == 0:
                         if text[i] not in alphabet:
                             alphabet.append(text[i]);
@@ -185,6 +187,9 @@ def main(keywordsfile, textfile):
                                     foundState = 1;
                                     state = g[state, text[i]];
                                     break;
+                    if state in output:
+                            for oi in output[state]:
+                                file.write('index: {0:7d}  =>  keyword: {1:10}\n'.format((int(position + i - len(oi) + 1)), oi));
                 position += len(text) - 1;
     except IOError:
         print('Error while opening files');
